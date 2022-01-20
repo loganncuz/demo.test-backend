@@ -1,0 +1,114 @@
+buildscript {
+    ext {
+        springBootVersion = '2.3.5.RELEASE'
+    }
+    repositories {
+        mavenCentral()
+//        maven {
+//            url "https://plugins.gradle.org/m2/"
+//        }
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'org.springframework.boot'
+apply plugin: 'java-library'
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+apply plugin: 'io.spring.dependency-management'
+mainClassName = "com.ncuz.backend.Application"
+
+
+ext {
+    set('springCloudVersion', "Hoxton.SR3")
+    set('springBootVersion',  '2.3.5.RELEASE')
+    set('log4j2.version',  '2.15.0')
+}
+dependencyManagement {
+    imports { mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"}
+    imports { mavenBom "org.springframework.boot:spring-boot-starter-parent:${springBootVersion}"}
+
+}
+
+configurations {
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
+}
+
+group 'com.ncuz'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+bootJar {
+    enabled = true
+    archivesBaseName = 'backend'
+    manifest {
+        attributes(
+                'Main-Class': 'org.springframework.boot.loader.JarLauncher',
+                'Start-Class': mainClassName,
+                'Class-Path': 'backend'
+        )
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-log4j2', version: '2.5.3'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage'
+    }
+    implementation "org.springframework.boot:spring-boot-devtools"
+    implementation group: 'com.lmax', name: 'disruptor', version: '3.4.4'
+    // https://mvnrepository.com/artifact/net.sf.trove4j/trove4j
+    implementation group: 'net.sf.trove4j', name: 'trove4j', version: '3.0.3'
+    implementation 'org.apache.logging.log4j:log4j-bom:2.15.0'
+    api(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")) {
+        exclude(group: "org.apache.logging.log4j")
+    }
+    api(platform("org.apache.logging.log4j:log4j-bom:2.15.0")) {
+        because "https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+    }
+
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
+    implementation group: 'commons-configuration', name: 'commons-configuration', version: '1.10'
+// https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
+    implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+//    implementation group: 'com.esotericsoftware.yamlbeans', name: 'yamlbeans', version: '1.13'
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.10.0'
+    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt
+    implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
+    // https://projectlombok.org
+    compileOnly 'org.projectlombok:lombok:1.18.4'
+    annotationProcessor 'org.projectlombok:lombok:1.18.4'
+
+
+
+    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.27'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+        events "passed", "skipped", "failed"
+    }
+}
